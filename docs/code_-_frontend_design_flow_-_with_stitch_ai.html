@@ -1,0 +1,364 @@
+<!DOCTYPE html>
+<html class="dark" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Workflow Automation Tool</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,typography,container-queries"></script>
+<script>
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        primary: "#10B981", // Emerald green for the primary action/brand
+                        "background-light": "#F3F4F6", // Light gray
+                        "background-dark": "#0F172A", // Slate 900 for deep dark background
+                        "surface-light": "#FFFFFF",
+                        "surface-dark": "#1E293B", // Slate 800 for panels
+                        "grid-light": "#E5E7EB",
+                        "grid-dark": "#334155", // Slate 700 for grid lines
+                        "connector-light": "#9CA3AF",
+                        "connector-dark": "#34D399", // Neon emerald for connections
+                        "node-border-light": "#D1D5DB",
+                        "node-border-dark": "#475569",
+                    },
+                    fontFamily: {
+                        display: ["Inter", "sans-serif"],
+                        mono: ["Fira Code", "monospace"],
+                    },
+                    borderRadius: {
+                        DEFAULT: "0.75rem", // 12px
+                    },
+                    boxShadow: {
+                        'neon': '0 0 10px rgba(52, 211, 153, 0.5), 0 0 20px rgba(52, 211, 153, 0.3)',
+                        'node-hover': '0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06)',
+                    }
+                },
+            },
+        };
+    </script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;family=Fira+Code:wght@400;500&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/icon?family=Material+Icons+Round" rel="stylesheet"/>
+<style>
+        body { font-family: 'Inter', sans-serif; }
+        .bg-grid {
+            background-size: 20px 20px;
+            background-image: radial-gradient(var(--tw-grid-color) 1px, transparent 1px);
+        }
+        .light .bg-grid { --tw-grid-color: #cbd5e1; }
+        .dark .bg-grid { --tw-grid-color: #334155; }
+        .connector-flow {
+            stroke-dasharray: 10;
+            animation: dash 30s linear infinite;
+        }
+        @keyframes dash {
+            to {
+                stroke-dashoffset: -1000;
+            }
+        }.sidebar-scroll::-webkit-scrollbar {
+            width: 4px;
+        }
+        .sidebar-scroll::-webkit-scrollbar-track {
+            background: transparent;
+        }
+        .sidebar-scroll::-webkit-scrollbar-thumb {
+            background: #475569;
+            border-radius: 10px;
+        }
+    </style>
+</head>
+<body class="bg-background-light dark:bg-background-dark text-gray-800 dark:text-gray-200 h-screen overflow-hidden flex flex-col transition-colors duration-300">
+<header class="h-16 bg-surface-light dark:bg-surface-dark border-b border-gray-200 dark:border-gray-700 flex items-center justify-between px-6 z-30 shrink-0 shadow-sm">
+<div class="flex items-center gap-4">
+<div class="flex items-center gap-2">
+<div class="w-8 h-8 bg-primary rounded-lg flex items-center justify-center text-white font-bold text-lg">W</div>
+<h1 class="font-semibold text-lg text-gray-900 dark:text-white">New Employee Onboarding</h1>
+</div>
+<span class="px-2 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400 border border-green-200 dark:border-green-800 flex items-center gap-1">
+<span class="w-1.5 h-1.5 rounded-full bg-green-500 animate-pulse"></span>
+            Active
+        </span>
+<span class="text-xs text-gray-500 dark:text-gray-400">Last run 2 mins ago</span>
+</div>
+<div class="flex items-center gap-4">
+<div class="flex items-center gap-2 bg-gray-100 dark:bg-slate-800 p-1 rounded-lg border border-gray-200 dark:border-gray-700">
+<button class="px-3 py-1 rounded-md text-xs font-medium bg-white dark:bg-slate-700 shadow-sm text-gray-700 dark:text-gray-200 transition-colors">Builder</button>
+<button class="px-3 py-1 rounded-md text-xs font-medium text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200 transition-colors flex items-center gap-1">
+                Live View
+                <span class="material-icons-round text-[14px]">visibility</span>
+</button>
+</div>
+<button class="bg-primary hover:bg-emerald-600 text-white px-4 py-2 rounded-lg text-sm font-medium transition-colors shadow-lg shadow-emerald-500/20 flex items-center gap-2">
+<span class="material-icons-round text-sm">play_arrow</span>
+            Run Workflow
+        </button>
+<button class="p-2 text-gray-500 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-lg transition-colors" onclick="document.documentElement.classList.toggle('dark')">
+<span class="material-icons-round dark:hidden">dark_mode</span>
+<span class="material-icons-round hidden dark:block">light_mode</span>
+</button>
+<div class="w-8 h-8 rounded-full bg-gradient-to-tr from-blue-500 to-purple-500 border-2 border-white dark:border-gray-700"></div>
+</div>
+</header>
+<div class="flex flex-1 overflow-hidden relative">
+<aside class="w-72 bg-surface-light dark:bg-surface-dark border-r border-gray-200 dark:border-gray-700 flex flex-col z-20 shadow-sm transition-all duration-300">
+<div class="p-4 border-b border-gray-200 dark:border-gray-700">
+<div class="relative">
+<span class="material-icons-round absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 text-lg">search</span>
+<input class="w-full bg-gray-100 dark:bg-slate-800 border-none text-xs rounded-lg pl-10 pr-4 py-2 focus:ring-1 focus:ring-primary outline-none text-gray-600 dark:text-gray-300" placeholder="Search nodes..." type="text"/>
+</div>
+</div>
+<div class="flex-1 overflow-y-auto sidebar-scroll p-4 flex flex-col gap-6">
+<section>
+<div class="flex items-center gap-2 mb-3 text-gray-400 dark:text-gray-500">
+<span class="material-icons-round text-sm">chat_bubble_outline</span>
+<h3 class="text-[10px] font-bold uppercase tracking-widest">Messaging</h3>
+</div>
+<div class="grid grid-cols-2 gap-2">
+<div class="flex flex-col items-center justify-center p-3 rounded-xl bg-gray-50 dark:bg-slate-800/40 border border-gray-100 dark:border-slate-700/50 hover:border-blue-500/50 cursor-grab active:cursor-grabbing group transition-all">
+<span class="material-icons-round text-blue-500 mb-1">sms</span>
+<span class="text-[10px] font-medium text-gray-600 dark:text-gray-400">WhatsApp</span>
+</div>
+<div class="flex flex-col items-center justify-center p-3 rounded-xl bg-gray-50 dark:bg-slate-800/40 border border-gray-100 dark:border-slate-700/50 hover:border-blue-500/50 cursor-grab active:cursor-grabbing group transition-all">
+<span class="material-icons-round text-blue-500 mb-1">chat</span>
+<span class="text-[10px] font-medium text-gray-600 dark:text-gray-400">Slack</span>
+</div>
+</div>
+</section>
+<section>
+<div class="flex items-center gap-2 mb-3 text-gray-400 dark:text-gray-500">
+<span class="material-icons-round text-sm">mail_outline</span>
+<h3 class="text-[10px] font-bold uppercase tracking-widest">Email</h3>
+</div>
+<div class="grid grid-cols-2 gap-2">
+<div class="flex flex-col items-center justify-center p-3 rounded-xl bg-gray-50 dark:bg-slate-800/40 border border-gray-100 dark:border-slate-700/50 hover:border-purple-500/50 cursor-grab active:cursor-grabbing transition-all">
+<span class="material-icons-round text-purple-500 mb-1">alternate_email</span>
+<span class="text-[10px] font-medium text-gray-600 dark:text-gray-400">Gmail</span>
+</div>
+<div class="flex flex-col items-center justify-center p-3 rounded-xl bg-gray-50 dark:bg-slate-800/40 border border-gray-100 dark:border-slate-700/50 hover:border-purple-500/50 cursor-grab active:cursor-grabbing transition-all">
+<span class="material-icons-round text-purple-500 mb-1">outbox</span>
+<span class="text-[10px] font-medium text-gray-600 dark:text-gray-400">SMTP</span>
+</div>
+</div>
+</section>
+<section>
+<div class="flex items-center gap-2 mb-3 text-gray-400 dark:text-gray-500">
+<span class="material-icons-round text-sm">storage</span>
+<h3 class="text-[10px] font-bold uppercase tracking-widest">Database</h3>
+</div>
+<div class="grid grid-cols-2 gap-2">
+<div class="flex flex-col items-center justify-center p-3 rounded-xl bg-gray-50 dark:bg-slate-800/40 border border-gray-100 dark:border-slate-700/50 hover:border-orange-500/50 cursor-grab active:cursor-grabbing transition-all">
+<span class="material-icons-round text-orange-500 mb-1">table_view</span>
+<span class="text-[10px] font-medium text-gray-600 dark:text-gray-400">MySQL</span>
+</div>
+<div class="flex flex-col items-center justify-center p-3 rounded-xl bg-gray-50 dark:bg-slate-800/40 border border-gray-100 dark:border-slate-700/50 hover:border-orange-500/50 cursor-grab active:cursor-grabbing transition-all">
+<span class="material-icons-round text-orange-500 mb-1">dataset</span>
+<span class="text-[10px] font-medium text-gray-600 dark:text-gray-400">Postgres</span>
+</div>
+</div>
+</section>
+<section>
+<div class="flex items-center gap-2 mb-3 text-gray-400 dark:text-gray-500">
+<span class="material-icons-round text-sm">alt_route</span>
+<h3 class="text-[10px] font-bold uppercase tracking-widest">Logic</h3>
+</div>
+<div class="grid grid-cols-2 gap-2">
+<div class="flex flex-col items-center justify-center p-3 rounded-xl bg-gray-50 dark:bg-slate-800/40 border border-gray-100 dark:border-slate-700/50 hover:border-green-500/50 cursor-grab active:cursor-grabbing transition-all">
+<span class="material-icons-round text-green-500 mb-1">fork_right</span>
+<span class="text-[10px] font-medium text-gray-600 dark:text-gray-400">Condition</span>
+</div>
+<div class="flex flex-col items-center justify-center p-3 rounded-xl bg-gray-50 dark:bg-slate-800/40 border border-gray-100 dark:border-slate-700/50 hover:border-green-500/50 cursor-grab active:cursor-grabbing transition-all">
+<span class="material-icons-round text-green-500 mb-1">update</span>
+<span class="text-[10px] font-medium text-gray-600 dark:text-gray-400">Delay</span>
+</div>
+</div>
+</section>
+<section>
+<div class="flex items-center gap-2 mb-3 text-gray-400 dark:text-gray-500">
+<span class="material-icons-round text-sm">code</span>
+<h3 class="text-[10px] font-bold uppercase tracking-widest">Developer</h3>
+</div>
+<div class="grid grid-cols-2 gap-2">
+<div class="flex flex-col items-center justify-center p-3 rounded-xl bg-gray-50 dark:bg-slate-800/40 border border-gray-100 dark:border-slate-700/50 hover:border-pink-500/50 cursor-grab active:cursor-grabbing transition-all">
+<span class="material-icons-round text-pink-500 mb-1">javascript</span>
+<span class="text-[10px] font-medium text-gray-600 dark:text-gray-400">Script</span>
+</div>
+<div class="flex flex-col items-center justify-center p-3 rounded-xl bg-gray-50 dark:bg-slate-800/40 border border-gray-100 dark:border-slate-700/50 hover:border-pink-500/50 cursor-grab active:cursor-grabbing transition-all">
+<span class="material-icons-round text-pink-500 mb-1">http</span>
+<span class="text-[10px] font-medium text-gray-600 dark:text-gray-400">Webhook</span>
+</div>
+</div>
+</section>
+</div>
+<div class="p-4 border-t border-gray-200 dark:border-gray-700 mt-auto">
+<div class="flex items-center gap-3 p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-slate-800 text-gray-500 dark:text-gray-400 cursor-pointer transition-all">
+<span class="material-icons-round text-lg">settings</span>
+<span class="text-xs font-medium">Workspace Settings</span>
+</div>
+</div>
+</aside>
+<main class="flex-1 relative overflow-hidden bg-grid bg-background-light dark:bg-background-dark cursor-grab active:cursor-grabbing">
+<div class="absolute inset-0 flex items-center justify-center transform scale-90 origin-center">
+<svg class="absolute inset-0 w-full h-full pointer-events-none z-0">
+<defs>
+<linearGradient id="gradient-flow" x1="0%" x2="100%" y1="0%" y2="0%">
+<stop class="stop-color-gray-400 dark:stop-color-emerald-500" offset="0%" style="stop-color:var(--tw-colors-connector-dark);stop-opacity:0.2"></stop>
+<stop class="stop-color-gray-400 dark:stop-color-emerald-400" offset="100%" style="stop-color:var(--tw-colors-connector-dark);stop-opacity:1"></stop>
+</linearGradient>
+</defs>
+<path class="text-gray-300 dark:text-slate-600" d="M 180 350 C 250 350, 250 350, 320 350" fill="none" stroke="currentColor" stroke-width="2"></path>
+<path class="text-green-500 dark:text-emerald-400 connector-flow opacity-60 dark:opacity-100" d="M 180 350 C 250 350, 250 350, 320 350" fill="none" stroke="currentColor" stroke-width="2"></path>
+<path class="text-gray-300 dark:text-slate-600" d="M 440 350 C 500 350, 500 250, 580 250" fill="none" stroke="currentColor" stroke-width="2"></path>
+<path class="text-green-500 dark:text-emerald-400 connector-flow opacity-60 dark:opacity-100" d="M 440 350 C 500 350, 500 250, 580 250" fill="none" stroke="currentColor" stroke-width="2"></path>
+<path class="text-gray-300 dark:text-slate-600" d="M 440 350 C 500 350, 500 480, 580 480" fill="none" stroke="currentColor" stroke-width="2"></path>
+<path class="text-green-500 dark:text-emerald-400 connector-flow opacity-60 dark:opacity-100" d="M 440 350 C 500 350, 500 480, 580 480" fill="none" stroke="currentColor" stroke-width="2"></path>
+<path class="text-gray-300 dark:text-slate-600" d="M 700 250 C 760 250, 760 150, 840 150" fill="none" stroke="currentColor" stroke-width="2"></path>
+<path class="text-green-500 dark:text-emerald-400 connector-flow opacity-60 dark:opacity-100" d="M 700 250 C 760 250, 760 150, 840 150" fill="none" stroke="currentColor" stroke-width="2"></path>
+<path class="text-gray-300 dark:text-slate-600" d="M 960 150 C 1000 150, 1000 150, 1040 150" fill="none" stroke="currentColor" stroke-width="2"></path>
+<path class="text-gray-300 dark:text-slate-600" d="M 700 250 C 760 250, 760 350, 1040 350" fill="none" stroke="currentColor" stroke-width="2"></path>
+<path class="text-green-500 dark:text-emerald-400 connector-flow opacity-60 dark:opacity-100" d="M 700 250 C 760 250, 760 350, 1040 350" fill="none" stroke="currentColor" stroke-width="2"></path>
+<path class="text-gray-300 dark:text-slate-600" d="M 700 480 C 740 480, 740 480, 800 480" fill="none" stroke="currentColor" stroke-width="2"></path>
+</svg>
+<div class="absolute left-[60px] top-[290px] w-32 flex flex-col items-center gap-2 group z-10">
+<div class="relative w-28 h-28 bg-white dark:bg-surface-dark rounded-3xl border-2 border-green-500 dark:border-emerald-500 shadow-lg dark:shadow-emerald-900/20 flex items-center justify-center transition-all hover:-translate-y-1">
+<div class="absolute -left-3 top-4 text-orange-500 text-xl font-bold animate-pulse">⚡</div>
+<div class="w-12 h-12 bg-green-900/10 dark:bg-emerald-500/10 rounded-xl flex items-center justify-center">
+<span class="text-2xl font-bold text-green-700 dark:text-emerald-400">W</span>
+</div>
+<div class="absolute bottom-2 right-2 w-5 h-5 bg-green-500 rounded-full flex items-center justify-center border-2 border-white dark:border-surface-dark">
+<span class="material-icons-round text-white text-[12px]">check</span>
+</div>
+<div class="absolute -right-3 top-1/2 -translate-y-1/2 w-4 h-4 bg-gray-400 dark:bg-slate-600 rounded-full border-4 border-white dark:border-background-dark hover:bg-primary cursor-crosshair"></div>
+</div>
+<div class="text-center">
+<p class="text-sm font-semibold text-gray-800 dark:text-gray-200">Workable</p>
+<p class="text-xs text-gray-500 dark:text-gray-500">New employee</p>
+</div>
+</div>
+<div class="absolute left-[320px] top-[290px] w-32 flex flex-col items-center gap-2 group z-10">
+<div class="relative w-28 h-28 bg-white dark:bg-surface-dark rounded-3xl border border-gray-200 dark:border-node-border-dark shadow-sm hover:shadow-md dark:shadow-none dark:hover:border-primary transition-all hover:-translate-y-1">
+<div class="absolute -left-2 top-1/2 -translate-y-1/2 w-4 h-4 bg-gray-400 dark:bg-slate-600 rounded-full border-4 border-white dark:border-background-dark"></div>
+<div class="w-full h-full flex items-center justify-center">
+<div class="w-12 h-12 bg-emerald-900/10 dark:bg-emerald-500/10 rounded-xl flex items-center justify-center">
+<span class="material-icons-round text-3xl text-emerald-600 dark:text-emerald-400">cloud_done</span>
+</div>
+</div>
+<div class="absolute bottom-2 right-2 w-5 h-5 bg-green-500 rounded-full flex items-center justify-center border-2 border-white dark:border-surface-dark">
+<span class="material-icons-round text-white text-[12px]">check</span>
+</div>
+<div class="absolute -right-2 top-1/2 -translate-y-1/2 w-4 h-4 bg-gray-400 dark:bg-slate-600 rounded-full border-4 border-white dark:border-background-dark hover:bg-primary cursor-crosshair"></div>
+</div>
+<div class="text-center">
+<p class="text-sm font-semibold text-gray-800 dark:text-gray-200">ServiceNow</p>
+<p class="text-xs text-gray-500 dark:text-gray-500">Create ticket</p>
+</div>
+</div>
+<div class="absolute left-[580px] top-[190px] w-32 flex flex-col items-center gap-2 group z-10">
+<div class="relative w-28 h-28 bg-white dark:bg-surface-dark rounded-3xl border-2 border-primary shadow-lg dark:shadow-neon transition-all">
+<div class="absolute -left-2 top-1/2 -translate-y-1/2 w-4 h-4 bg-primary rounded-full border-4 border-white dark:border-background-dark"></div>
+<div class="w-full h-full flex items-center justify-center flex-col gap-1">
+<div class="w-10 h-10 bg-green-100 dark:bg-green-900/30 rounded-lg flex items-center justify-center">
+<span class="material-icons-round text-2xl text-green-600 dark:text-green-400">alt_route</span>
+</div>
+</div>
+<div class="absolute bottom-2 right-2 w-5 h-5 bg-green-500 rounded-full flex items-center justify-center border-2 border-white dark:border-surface-dark">
+<span class="material-icons-round text-white text-[12px]">check</span>
+</div>
+<div class="absolute -right-2 top-1/2 -translate-y-1/2 w-4 h-4 bg-primary rounded-full border-4 border-white dark:border-background-dark hover:bg-primary cursor-crosshair"></div>
+</div>
+<div class="text-center">
+<p class="text-sm font-semibold text-primary">IF Condition</p>
+<p class="text-xs text-gray-500 dark:text-gray-400">Is Manager?</p>
+</div>
+</div>
+<div class="absolute left-[580px] top-[420px] w-32 flex flex-col items-center gap-2 group z-10">
+<div class="relative w-28 h-28 bg-white dark:bg-surface-dark rounded-3xl border border-gray-200 dark:border-node-border-dark shadow-sm hover:shadow-md dark:shadow-none dark:hover:border-primary transition-all hover:-translate-y-1">
+<div class="absolute -left-2 top-1/2 -translate-y-1/2 w-4 h-4 bg-gray-400 dark:bg-slate-600 rounded-full border-4 border-white dark:border-background-dark"></div>
+<div class="w-full h-full flex items-center justify-center">
+<div class="grid grid-cols-2 gap-1 w-10 h-10 rotate-12">
+<div class="bg-blue-400 rounded-full w-full h-full"></div>
+<div class="bg-green-400 rounded-full w-full h-full"></div>
+<div class="bg-red-400 rounded-full w-full h-full"></div>
+<div class="bg-yellow-400 rounded-full w-full h-full"></div>
+</div>
+</div>
+<div class="absolute -right-2 top-1/2 -translate-y-1/2 w-4 h-4 bg-gray-400 dark:bg-slate-600 rounded-full border-4 border-white dark:border-background-dark hover:bg-primary cursor-crosshair"></div>
+</div>
+<div class="text-center">
+<p class="text-sm font-semibold text-gray-800 dark:text-gray-200">Slack user</p>
+<p class="text-xs text-gray-500 dark:text-gray-500">Create Slack user</p>
+</div>
+</div>
+<div class="absolute left-[230px] top-[330px] text-[10px] font-medium text-green-600 dark:text-emerald-400 bg-white dark:bg-slate-900 px-1 rounded border border-green-100 dark:border-emerald-900">7 items</div>
+<div class="absolute left-[490px] top-[280px] text-[10px] font-medium text-green-600 dark:text-emerald-400 bg-white dark:bg-slate-900 px-1 rounded border border-green-100 dark:border-emerald-900">6 items</div>
+<div class="absolute left-[490px] top-[400px] text-[10px] font-medium text-green-600 dark:text-emerald-400 bg-white dark:bg-slate-900 px-1 rounded border border-green-100 dark:border-emerald-900">6 items</div>
+<div class="absolute left-[750px] top-[180px] text-[10px] font-medium text-green-600 dark:text-emerald-400 bg-white dark:bg-slate-900 px-1 rounded border border-green-100 dark:border-emerald-900">3 items</div>
+</div>
+</main>
+<aside class="w-80 bg-surface-light/95 dark:bg-surface-dark/90 backdrop-blur-md border-l border-gray-200 dark:border-gray-700 p-6 flex flex-col gap-6 shadow-xl absolute right-0 top-0 h-full z-20">
+<div class="flex items-center justify-between pb-4 border-b border-gray-200 dark:border-gray-700">
+<div class="flex items-center gap-3">
+<div class="w-10 h-10 bg-green-100 dark:bg-green-900/30 rounded-lg flex items-center justify-center">
+<span class="material-icons-round text-green-600 dark:text-green-400">alt_route</span>
+</div>
+<div>
+<h2 class="font-semibold text-gray-900 dark:text-white">IF Condition</h2>
+<span class="text-xs text-gray-500 dark:text-gray-400 font-mono">ID: node_4f8a</span>
+</div>
+</div>
+<button class="text-gray-400 hover:text-gray-600 dark:hover:text-gray-200">
+<span class="material-icons-round">close</span>
+</button>
+</div>
+<div class="flex flex-col gap-4 overflow-y-auto">
+<div class="flex flex-col gap-1.5">
+<label class="text-xs font-semibold uppercase tracking-wider text-gray-500 dark:text-gray-400">Condition Name</label>
+<input class="bg-white dark:bg-slate-800 border border-gray-300 dark:border-gray-600 text-gray-900 dark:text-white text-sm rounded-lg focus:ring-primary focus:border-primary block w-full p-2.5 outline-none transition-colors" type="text" value="Is Manager?"/>
+</div>
+<div class="flex flex-col gap-1.5">
+<label class="text-xs font-semibold uppercase tracking-wider text-gray-500 dark:text-gray-400">Logic Type</label>
+<div class="flex bg-gray-100 dark:bg-slate-800 rounded-lg p-1">
+<button class="flex-1 text-xs py-1.5 bg-white dark:bg-slate-600 rounded shadow text-gray-900 dark:text-white font-medium">AND</button>
+<button class="flex-1 text-xs py-1.5 text-gray-500 dark:text-gray-400 font-medium hover:text-gray-700 dark:hover:text-gray-200">OR</button>
+</div>
+</div>
+<div class="bg-gray-50 dark:bg-slate-800/50 p-3 rounded-lg border border-gray-200 dark:border-gray-700 flex flex-col gap-3">
+<div class="flex justify-between items-center">
+<label class="text-xs font-semibold text-gray-700 dark:text-gray-300">Rules</label>
+<button class="text-xs text-primary font-medium hover:underline">+ Add Rule</button>
+</div>
+<div class="flex items-center gap-2 bg-white dark:bg-slate-800 p-2 rounded border border-gray-200 dark:border-gray-600">
+<span class="material-icons-round text-gray-400 text-sm">data_object</span>
+<div class="flex-1 text-xs font-mono text-gray-600 dark:text-gray-300">
+                        user.role == 'manager'
+                    </div>
+<button class="text-gray-400 hover:text-red-500">
+<span class="material-icons-round text-sm">remove_circle_outline</span>
+</button>
+</div>
+</div>
+<div class="flex flex-col gap-1.5">
+<label class="text-xs font-semibold uppercase tracking-wider text-gray-500 dark:text-gray-400">Output Paths</label>
+<div class="flex items-center justify-between p-2.5 bg-white dark:bg-slate-800 rounded-lg border border-gray-200 dark:border-gray-600">
+<div class="flex items-center gap-2">
+<div class="w-2 h-2 rounded-full bg-green-500"></div>
+<span class="text-sm text-gray-700 dark:text-gray-300">True Path</span>
+</div>
+<span class="text-xs text-gray-400">3 nodes</span>
+</div>
+<div class="flex items-center justify-between p-2.5 bg-white dark:bg-slate-800 rounded-lg border border-gray-200 dark:border-gray-600">
+<div class="flex items-center gap-2">
+<div class="w-2 h-2 rounded-full bg-red-400"></div>
+<span class="text-sm text-gray-700 dark:text-gray-300">False Path</span>
+</div>
+<span class="text-xs text-gray-400">2 nodes</span>
+</div>
+</div>
+</div>
+<div class="mt-auto flex gap-3 pt-4 border-t border-gray-200 dark:border-gray-700">
+<button class="flex-1 py-2 rounded-lg border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 text-sm font-medium hover:bg-gray-50 dark:hover:bg-slate-800 transition-colors">Delete</button>
+<button class="flex-1 py-2 rounded-lg bg-primary text-white text-sm font-medium hover:bg-emerald-600 shadow-lg shadow-emerald-500/20 transition-colors">Save Changes</button>
+</div>
+</aside>
+</div>
+
+</body></html>

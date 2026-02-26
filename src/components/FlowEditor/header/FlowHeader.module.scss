@@ -1,0 +1,170 @@
+.header {
+  height: 56px;
+  flex-shrink: 0;
+  background: var(--bg-header);
+  border-bottom: 1px solid var(--border);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 20px;
+  z-index: 20;
+  box-shadow: var(--shadow-sm);
+}
+
+.left,
+.right {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+// ─── Back button ───────────────────────────────────────────────────────────
+
+.backBtn {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  padding: 5px 10px;
+  border: 1px solid var(--border);
+  background: none;
+  color: var(--text-muted);
+  border-radius: var(--radius-md);
+  font-size: var(--text-xs);
+  font-weight: 500;
+  cursor: pointer;
+  font-family: var(--font-sans);
+  transition: background var(--transition-fast), color var(--transition-fast);
+  text-decoration: none;
+  line-height: 1;
+
+  &:hover {
+    background: var(--bg-hover);
+    color: var(--text-primary);
+  }
+}
+
+.divider {
+  width: 1px;
+  height: 20px;
+  background: var(--border);
+  flex-shrink: 0;
+}
+
+// ─── Logo ──────────────────────────────────────────────────────────────────
+
+.logo {
+  width: 30px;
+  height: 30px;
+  background: var(--primary);
+  border-radius: var(--radius-md);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #fff;
+  font-weight: 700;
+  font-size: 15px;
+  flex-shrink: 0;
+}
+
+// ─── Nome do fluxo ─────────────────────────────────────────────────────────
+
+.nameBtn {
+  background: none;
+  border: none;
+  font-family: var(--font-sans);
+  font-size: var(--text-lg);
+  font-weight: 600;
+  color: var(--text-primary);
+  cursor: pointer;
+  padding: 4px 6px;
+  border-radius: var(--radius-sm);
+  transition: background var(--transition-fast);
+
+  &:hover {
+    background: #F3F4F6;
+  }
+}
+
+.nameInput {
+  font-family: var(--font-sans);
+  font-size: var(--text-lg);
+  font-weight: 600;
+  color: var(--text-primary);
+  border: 1px solid var(--primary);
+  border-radius: var(--radius-sm);
+  padding: 3px 6px;
+  outline: none;
+  background: var(--bg-surface);
+  min-width: 200px;
+}
+
+// ─── Status badge ──────────────────────────────────────────────────────────
+
+.statusBadge {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  padding: 3px 10px 3px 7px;
+  border-radius: var(--radius-full);
+  font-size: var(--text-xs);
+  font-weight: 500;
+  border: 1px solid;
+  cursor: pointer;
+  font-family: var(--font-sans);
+  transition: background var(--transition-fast), opacity var(--transition-fast);
+
+  &:hover { opacity: 0.8; }
+}
+
+.active {
+  background: #F0FDF4;
+  color: #16A34A;
+  border-color: #BBF7D0;
+}
+
+.inactive {
+  background: #F9FAFB;
+  color: var(--text-muted);
+  border-color: var(--border);
+}
+
+.statusDot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: currentColor;
+
+  .active & {
+    animation: pulse 2s ease-in-out infinite;
+  }
+}
+
+@keyframes pulse {
+  0%, 100% { opacity: 1; }
+  50%       { opacity: 0.4; }
+}
+
+// ─── Botão salvar ──────────────────────────────────────────────────────────
+
+.saveBtn {
+  padding: 7px 18px;
+  background: var(--primary);
+  color: #fff;
+  border: none;
+  border-radius: var(--radius-md);
+  font-size: var(--text-sm);
+  font-weight: 500;
+  cursor: pointer;
+  font-family: var(--font-sans);
+  transition: background var(--transition-fast), opacity var(--transition-fast);
+
+  &:hover:not(:disabled) {
+    background: var(--primary-hover);
+  }
+
+  &:disabled,
+  &.saving {
+    opacity: 0.6;
+    cursor: not-allowed;
+  }
+}

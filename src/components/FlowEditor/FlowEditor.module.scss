@@ -1,0 +1,84 @@
+.editor {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+}
+
+.layout {
+  width: 100%;
+  height: 100vh;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  background: var(--bg-app);
+}
+
+.workspace {
+  flex: 1;
+  display: flex;
+  overflow: hidden;
+  position: relative;
+}
+
+// ─── Canvas ────────────────────────────────────────────────────────────────
+
+.canvas {
+  flex: 1;
+  position: relative;
+  overflow: hidden;
+  background: var(--bg-canvas);
+}
+
+// Override de estilos do ReactFlow para consistência visual
+
+.canvas {
+  :global(.react-flow__background) {
+    background: var(--bg-canvas) !important;
+  }
+
+  :global(.react-flow__edge-path) {
+    stroke: var(--edge-default);
+    stroke-width: 2;
+  }
+
+  :global(.react-flow__edge.selected .react-flow__edge-path) {
+    stroke: var(--edge-selected);
+    stroke-width: 2.5;
+  }
+
+  :global(.react-flow__connection-path) {
+    stroke: var(--primary);
+    stroke-width: 2;
+    stroke-dasharray: 5 3;
+  }
+}
+
+// ─── Controls ─────────────────────────────────────────────────────────────
+
+.controls {
+  :global(.react-flow__controls-button) {
+    background: var(--bg-surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-sm);
+    color: var(--text-secondary);
+    box-shadow: var(--shadow-sm);
+
+    &:hover {
+      background: #F3F4F6;
+    }
+
+    svg { fill: currentColor; }
+  }
+}
+
+// ─── MiniMap ──────────────────────────────────────────────────────────────
+
+.minimap {
+  :global(.react-flow__minimap) {
+    border: 1px solid var(--border);
+    border-radius: var(--radius-md);
+    box-shadow: var(--shadow-md);
+    overflow: hidden;
+  }
+}
